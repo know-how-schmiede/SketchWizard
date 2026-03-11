@@ -1,5 +1,11 @@
 # Version History
 
+## 0.5.0 (2026-03-11)
+
+- Exportformat `PDF` als dritte Option im Dialog hinzugefuegt.
+- PDF-Export als Vektor-Ausgabe aus Sketch-Kurven implementiert.
+- Export-Validierung auf `DXF`, `SVG` und `PDF` erweitert.
+
 ## 0.4.2 (2026-03-11)
 
 - Skizzenaufloesung von Token auf direkte Objekt-Referenzen umgestellt.

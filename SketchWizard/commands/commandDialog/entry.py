@@ -14,7 +14,7 @@ ui = app.userInterface
 
 CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_cmdDialog'
 CMD_NAME = f'SketchWizzard {VERSION}'
-CMD_Description = 'Exportiert eine Skizze als DXF oder SVG.'
+CMD_Description = 'Exportiert eine Skizze als DXF, SVG oder PDF.'
 
 # Specify that the command will be promoted to the panel.
 IS_PROMOTED = False
@@ -40,6 +40,7 @@ NO_SKETCHES_TEXT = 'Keine Skizzen in der Konstruktion vorhanden.'
 SETTINGS_OUTPUT_PATH_KEY = 'output_path'
 SETTINGS_FILENAME = 'settings.json'
 SVG_STROKE_TOLERANCE_CM = 0.01  # 0.1 mm
+PDF_PT_PER_MM = 72.0 / 25.4
 
 # Local list of event handlers used to maintain a reference so
 # they are not released and garbage collected.
@@ -260,7 +261,7 @@ def _sample_sketch_curve_points(sketch: adsk.fusion.Sketch, sketch_curve):
         return []
 
 
-def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
+def _collect_export_strokes(sketch: adsk.fusion.Sketch):
     strokes = []
     sketch_curves = sketch.sketchCurves
     for i in range(sketch_curves.count):
@@ -272,7 +273,7 @@ def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
             strokes.append(stroke)
 
     if not strokes:
-        return False, 'Die Skizze enthaelt keine exportierbaren Geometrien.'
+        return None, 'Die Skizze enthaelt keine exportierbaren Geometrien.'
 
     all_x = [point[0] for stroke in strokes for point in stroke]
     all_y = [point[1] for stroke in strokes for point in stroke]
@@ -283,7 +284,27 @@ def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
     max_y = max(all_y)
 
     if _points_close((min_x, min_y), (max_x, max_y)):
-        return False, 'Die Skizze hat keine gueltige Ausdehnung fuer SVG.'
+        return None, 'Die Skizze hat keine gueltige Ausdehnung fuer den Export.'
+
+    return {
+        'strokes': strokes,
+        'min_x': min_x,
+        'max_x': max_x,
+        'min_y': min_y,
+        'max_y': max_y
+    }, ''
+
+
+def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
+    export_data, error_message = _collect_export_strokes(sketch)
+    if export_data is None:
+        return False, error_message
+
+    strokes = export_data['strokes']
+    min_x = export_data['min_x']
+    max_x = export_data['max_x']
+    min_y = export_data['min_y']
+    max_y = export_data['max_y']
 
     margin_mm = 1.0
     width_mm = (max_x - min_x) + (2.0 * margin_mm)
@@ -339,6 +360,96 @@ def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
     return True, ''
 
 
+def _export_sketch_as_pdf(sketch: adsk.fusion.Sketch, output_file: str):
+    export_data, error_message = _collect_export_strokes(sketch)
+    if export_data is None:
+        return False, error_message
+
+    strokes = export_data['strokes']
+    min_x = export_data['min_x']
+    max_x = export_data['max_x']
+    min_y = export_data['min_y']
+    max_y = export_data['max_y']
+
+    margin_mm = 5.0
+    width_mm = (max_x - min_x) + (2.0 * margin_mm)
+    height_mm = (max_y - min_y) + (2.0 * margin_mm)
+    width_pt = width_mm * PDF_PT_PER_MM
+    height_pt = height_mm * PDF_PT_PER_MM
+
+    def map_x_pt(x_value):
+        return ((x_value - min_x) + margin_mm) * PDF_PT_PER_MM
+
+    def map_y_pt(y_value):
+        return ((y_value - min_y) + margin_mm) * PDF_PT_PER_MM
+
+    line_width_pt = 0.2 * PDF_PT_PER_MM
+    content_lines = [
+        f'{_format_float(line_width_pt)} w',
+        '1 J',
+        '1 j'
+    ]
+
+    for stroke in strokes:
+        transformed = [(map_x_pt(x), map_y_pt(y)) for x, y in stroke]
+        if len(transformed) < 2:
+            continue
+
+        is_closed = _points_close(transformed[0], transformed[-1], tolerance=0.001)
+        if is_closed:
+            transformed = transformed[:-1]
+        if len(transformed) < 2:
+            continue
+
+        first_x, first_y = transformed[0]
+        content_lines.append(f'{_format_float(first_x)} {_format_float(first_y)} m')
+        for x_value, y_value in transformed[1:]:
+            content_lines.append(f'{_format_float(x_value)} {_format_float(y_value)} l')
+        if is_closed:
+            content_lines.append('h')
+        content_lines.append('S')
+
+    content_stream = '\n'.join(content_lines) + '\n'
+    content_bytes = content_stream.encode('ascii')
+    content_length = len(content_bytes)
+
+    objects = [
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        (
+            f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {_format_float(width_pt)} {_format_float(height_pt)}] '
+            f'/Resources << >> /Contents 4 0 R >>'
+        ),
+        f'<< /Length {content_length} >>\nstream\n{content_stream}endstream'
+    ]
+
+    pdf_data = bytearray()
+    pdf_data.extend(b'%PDF-1.4\n')
+    object_offsets = [0]
+
+    for index, obj in enumerate(objects, start=1):
+        object_offsets.append(len(pdf_data))
+        pdf_data.extend(f'{index} 0 obj\n{obj}\nendobj\n'.encode('ascii'))
+
+    xref_offset = len(pdf_data)
+    pdf_data.extend(f'xref\n0 {len(objects) + 1}\n'.encode('ascii'))
+    pdf_data.extend(b'0000000000 65535 f \n')
+    for offset in object_offsets[1:]:
+        pdf_data.extend(f'{offset:010d} 00000 n \n'.encode('ascii'))
+
+    pdf_data.extend(
+        (
+            f'trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n'
+            f'startxref\n{xref_offset}\n%%EOF\n'
+        ).encode('ascii')
+    )
+
+    with open(output_file, 'wb') as pdf_file:
+        pdf_file.write(pdf_data)
+
+    return True, ''
+
+
 def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
     design = _get_active_design()
     if design is None:
@@ -369,6 +480,8 @@ def _export_selected_sketch(sketch: adsk.fusion.Sketch, output_dir: str, export_
 
     if export_format == 'SVG':
         success, error_message = _export_sketch_as_svg(sketch, output_file)
+    elif export_format == 'PDF':
+        success, error_message = _export_sketch_as_pdf(sketch, output_file)
     else:
         success, error_message = _export_sketch_as_dxf(sketch, output_file)
 
@@ -473,6 +586,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     )
     format_dropdown.listItems.add('DXF', True)
     format_dropdown.listItems.add('SVG', False)
+    format_dropdown.listItems.add('PDF', False)
 
     output_path_input = inputs.addStringValueInput(
         OUTPUT_PATH_INPUT_ID,
@@ -535,7 +649,7 @@ def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
 
     is_valid = has_sketch_selection
     is_valid = is_valid and bool(output_path)
-    is_valid = is_valid and selected_format in ('DXF', 'SVG')
+    is_valid = is_valid and selected_format in ('DXF', 'SVG', 'PDF')
     args.areInputsValid = is_valid
 
 
