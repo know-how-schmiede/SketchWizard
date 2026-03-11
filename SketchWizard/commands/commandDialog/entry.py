@@ -13,7 +13,7 @@ ui = app.userInterface
 
 
 CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_cmdDialog'
-CMD_NAME = f'SketchWizzard {VERSION}'
+CMD_NAME = f'SketchWizard {VERSION}'
 CMD_Description = 'Exportiert eine Skizze als DXF, SVG oder PDF.'
 
 # Specify that the command will be promoted to the panel.
@@ -30,7 +30,7 @@ LEGACY_PANEL_IDS = [
 # Resource location for command icons, here we assume a sub folder in this directory named "resources".
 ICON_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', '')
 
-HELLO_TEXT_INPUT_ID = 'hello_world_text'
+LOGO_IMAGE_INPUT_ID = 'logo_image'
 SKETCH_DROPDOWN_INPUT_ID = 'sketch_dropdown'
 FORMAT_DROPDOWN_INPUT_ID = 'export_format_dropdown'
 OUTPUT_PATH_INPUT_ID = 'output_path'
@@ -93,6 +93,41 @@ def _persist_output_path(output_path: str):
     settings = _load_settings()
     settings[SETTINGS_OUTPUT_PATH_KEY] = output_path
     _save_settings(settings)
+
+
+def _get_logo_candidate_paths():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    appdata_dir = os.environ.get('APPDATA', '')
+    appdata_addin_root = os.path.join(
+        appdata_dir,
+        'Autodesk',
+        'Autodesk Fusion 360',
+        'API',
+        'AddIns',
+        'SketchWizard'
+    )
+    addin_root = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
+    module_root = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
+    return [
+        os.path.join(appdata_addin_root, 'images', 'Logo_SketchWizard_200.png'),
+        os.path.join(addin_root, 'images', 'Logo_SketchWizard_200.png'),
+        os.path.join(module_root, 'images', 'Logo_SketchWizard_200.png'),
+        os.path.join(current_dir, 'resources', '64x64.png')
+    ]
+
+
+def _add_logo_input(inputs: adsk.core.CommandInputs):
+    for candidate_path in _get_logo_candidate_paths():
+        if not os.path.exists(candidate_path):
+            continue
+
+        try:
+            logo_input = inputs.addImageCommandInput(LOGO_IMAGE_INPUT_ID, 'Logo', candidate_path)
+            return logo_input
+        except:
+            pass
+
+    return None
 
 
 def _remove_control_from_panel(panel: adsk.core.ToolbarPanel):
@@ -462,7 +497,7 @@ def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
             if options and export_manager.execute(options):
                 return True, ''
         except:
-            futil.log(f'{CMD_NAME}: ExportManager-DXF fehlgeschlagen, verwende saveAsDXF Fallback.')
+            pass
 
     try:
         if sketch.saveAsDXF(output_file):
@@ -529,6 +564,7 @@ def start():
         control.isPromotedByDefault = IS_PROMOTED
     except:
         pass
+    futil.log(f'{CMD_NAME}: gestartet')
 
 
 # Executed when add-in is stopped.
@@ -554,14 +590,16 @@ def stop():
 # Function that is called when a user clicks the corresponding button in the UI.
 # This defines the contents of the command dialog and connects to command-related events.
 def command_created(args: adsk.core.CommandCreatedEventArgs):
-    # General logging for debug.
-    futil.log(f'{CMD_NAME} Command Created Event')
-
     global sketch_objects_by_label
     sketch_objects_by_label = {}
 
     inputs = args.command.commandInputs
-    inputs.addTextBoxCommandInput(HELLO_TEXT_INPUT_ID, 'Info', 'Hello WOrld', 1, True)
+    logo_input = _add_logo_input(inputs)
+    if logo_input:
+        try:
+            logo_input.isFullWidth = True
+        except:
+            pass
 
     sketch_dropdown = inputs.addDropDownCommandInput(
         SKETCH_DROPDOWN_INPUT_ID,
@@ -655,9 +693,6 @@ def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
 
 # This event handler is called when the user clicks the OK button in the command dialog.
 def command_execute(args: adsk.core.CommandEventArgs):
-    # General logging for debug.
-    futil.log(f'{CMD_NAME} Command Execute Event')
-
     inputs = args.command.commandInputs
     selected_label = _get_selected_sketch_label(inputs)
     selected_sketch = _find_sketch_by_label(selected_label)
@@ -689,8 +724,5 @@ def command_execute(args: adsk.core.CommandEventArgs):
 
 # This event handler is called when the command terminates.
 def command_destroy(args: adsk.core.CommandEventArgs):
-    # General logging for debug.
-    futil.log(f'{CMD_NAME} Command Destroy Event')
-
     global local_handlers
     local_handlers = []

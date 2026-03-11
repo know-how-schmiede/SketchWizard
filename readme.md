@@ -2,6 +2,9 @@
 
 **SketchWizard** is a Fusion 360 Add-In that allows you to export any sketch as a clean vector file for use in other software such as CAM tools, laser cutters, plotters, and graphic design applications.
 
+![Logo SketchWizard](/images/Logo_SketchWizard_200.png)
+
+
 The add-in provides a simple workflow: select a sketch from your design and export it directly as a vector file (e.g. SVG or DXF) with a **1:1 scale**.
 
 Perfect for workflows involving:

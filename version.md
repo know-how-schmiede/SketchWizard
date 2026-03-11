@@ -1,5 +1,29 @@
 # Version History
 
+## 0.5.5 (2026-03-11)
+
+- Logo-Auswahl auf `Logo_SketchWizard_200.png` festgelegt (PNG wird vor anderen Dateien verwendet).
+
+## 0.5.4 (2026-03-11)
+
+- Dialog-Crash bei Logo-Ladung behoben (`RuntimeError: invalid argument imageFile`).
+- Logo-Einbindung jetzt robust: versucht mehrere Kandidaten (JPG/PNG/Fallback) und faengt ungueltige Bildpfade ab.
+
+## 0.5.3 (2026-03-11)
+
+- Logo-Pfad fuer den Dialog priorisiert jetzt explizit `C:/Users/.../AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/SketchWizard/images/Logo_SketchWizard_200.jpg`.
+- Logo-Pfad wird fuer Fusion normalisiert (`/` statt `\`) und der verwendete Pfad im Log ausgegeben.
+
+## 0.5.2 (2026-03-11)
+
+- Logo-Pfadauflosung korrigiert: bevorzugt jetzt die AddIn-Installation unter `.../AddIns/SketchWizard/images/Logo_SketchWizard_200.jpg`.
+
+## 0.5.1 (2026-03-11)
+
+- Name im Menue/Dialog auf `SketchWizard <Versionsnummer>` korrigiert.
+- Info-Zeile (`Hello WOrld`) aus dem Dialog entfernt.
+- Logo `images/Logo_SketchWizard_200.jpg` als Dialog-Bild eingebunden (mit Fallback auf PNG/Resource).
+
 ## 0.5.0 (2026-03-11)
 
 - Exportformat `PDF` als dritte Option im Dialog hinzugefuegt.
