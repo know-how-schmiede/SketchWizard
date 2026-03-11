@@ -18,6 +18,8 @@ Perfect for workflows involving:
 
 ---
 
+![SketchWizard Dialog](/images/SketschWizard_Dialog.jpg)
+
 # Features
 
 ✔ Export Fusion sketches directly to **SVG**  

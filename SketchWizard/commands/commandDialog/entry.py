@@ -1,6 +1,7 @@
 import adsk.core
 import adsk.fusion
 import json
+import locale
 import os
 import re
 import sys
@@ -11,15 +12,261 @@ from ...version import VERSION
 app = adsk.core.Application.get()
 ui = app.userInterface
 
+TRANSLATIONS = {
+    'de': {
+        'cmd_description': 'Exportiert eine Skizze als DXF, SVG oder PDF.',
+        'no_sketches': 'Keine Skizzen im aktiven Design gefunden.',
+        'error_no_exportable_geometry': 'Die Skizze enthaelt keine exportierbare Geometrie.',
+        'error_invalid_extent': 'Die Skizze hat keine gueltige Ausdehnung fuer den Export.',
+        'error_no_active_design': 'Kein aktives Design verfuegbar.',
+        'error_dxf_export_failed': 'DXF-Export fehlgeschlagen.',
+        'error_command_definition': 'Die Befehlsdefinition konnte nicht erstellt werden.',
+        'error_workspace_missing': 'Workspace {workspace_id} wurde nicht gefunden.',
+        'error_panel_missing': 'Ziel-Panel {panel_id} wurde nicht gefunden.',
+        'log_started': 'gestartet',
+        'label_logo': 'Logo',
+        'label_sketches': 'Skizzen',
+        'label_export_format': 'Exportformat',
+        'label_output_path': 'Ausgabepfad',
+        'label_output_path_select': 'Ausgabepfad waehlen',
+        'dialog_select_output_folder': 'Ausgabeordner waehlen',
+        'error_no_valid_sketch': 'Es wurde keine gueltige Skizze ausgewaehlt.',
+        'error_select_output_path': 'Bitte einen gueltigen Ausgabepfad auswaehlen.',
+        'error_output_path_create': 'Ausgabepfad kann nicht erstellt werden:\n{path}',
+        'msg_export_success': 'Export erfolgreich:\n{path}',
+        'msg_export_failed': 'Export fehlgeschlagen ({export_format}):\n{error}'
+    },
+    'en': {
+        'cmd_description': 'Exports a sketch as DXF, SVG, or PDF.',
+        'no_sketches': 'No sketches found in the active design.',
+        'error_no_exportable_geometry': 'The sketch contains no exportable geometry.',
+        'error_invalid_extent': 'The sketch has no valid extent for export.',
+        'error_no_active_design': 'No active design is available.',
+        'error_dxf_export_failed': 'DXF export failed.',
+        'error_command_definition': 'Command definition could not be created.',
+        'error_workspace_missing': 'Workspace {workspace_id} was not found.',
+        'error_panel_missing': 'Target panel {panel_id} was not found.',
+        'log_started': 'started',
+        'label_logo': 'Logo',
+        'label_sketches': 'Sketches',
+        'label_export_format': 'Export Format',
+        'label_output_path': 'Output Path',
+        'label_output_path_select': 'Select Output Path',
+        'dialog_select_output_folder': 'Select Output Folder',
+        'error_no_valid_sketch': 'No valid sketch was selected.',
+        'error_select_output_path': 'Please select a valid output path.',
+        'error_output_path_create': 'Output path cannot be created:\n{path}',
+        'msg_export_success': 'Export successful:\n{path}',
+        'msg_export_failed': 'Export failed ({export_format}):\n{error}'
+    },
+    'es': {
+        'cmd_description': 'Exporta un boceto como DXF, SVG o PDF.',
+        'no_sketches': 'No se encontraron bocetos en el diseno activo.',
+        'error_no_exportable_geometry': 'El boceto no contiene geometria exportable.',
+        'error_invalid_extent': 'El boceto no tiene una extension valida para exportar.',
+        'error_no_active_design': 'No hay un diseno activo disponible.',
+        'error_dxf_export_failed': 'La exportacion DXF ha fallado.',
+        'error_command_definition': 'No se pudo crear la definicion del comando.',
+        'error_workspace_missing': 'No se encontro el espacio de trabajo {workspace_id}.',
+        'error_panel_missing': 'No se encontro el panel de destino {panel_id}.',
+        'log_started': 'iniciado',
+        'label_logo': 'Logo',
+        'label_sketches': 'Bocetos',
+        'label_export_format': 'Formato de exportacion',
+        'label_output_path': 'Ruta de salida',
+        'label_output_path_select': 'Seleccionar ruta de salida',
+        'dialog_select_output_folder': 'Seleccionar carpeta de salida',
+        'error_no_valid_sketch': 'No se selecciono un boceto valido.',
+        'error_select_output_path': 'Seleccione una ruta de salida valida.',
+        'error_output_path_create': 'No se puede crear la ruta de salida:\n{path}',
+        'msg_export_success': 'Exportacion correcta:\n{path}',
+        'msg_export_failed': 'La exportacion fallo ({export_format}):\n{error}'
+    },
+    'fr': {
+        'cmd_description': 'Exporte une esquisse en DXF, SVG ou PDF.',
+        'no_sketches': 'Aucune esquisse trouvee dans la conception active.',
+        'error_no_exportable_geometry': 'L esquisse ne contient aucune geometrie exportable.',
+        'error_invalid_extent': 'L esquisse n a pas de dimensions valides pour l export.',
+        'error_no_active_design': 'Aucune conception active disponible.',
+        'error_dxf_export_failed': 'Echec de l export DXF.',
+        'error_command_definition': 'Impossible de creer la definition de la commande.',
+        'error_workspace_missing': 'Espace de travail {workspace_id} introuvable.',
+        'error_panel_missing': 'Panneau cible {panel_id} introuvable.',
+        'log_started': 'demarre',
+        'label_logo': 'Logo',
+        'label_sketches': 'Esquisses',
+        'label_export_format': 'Format d export',
+        'label_output_path': 'Chemin de sortie',
+        'label_output_path_select': 'Choisir le chemin de sortie',
+        'dialog_select_output_folder': 'Choisir le dossier de sortie',
+        'error_no_valid_sketch': 'Aucune esquisse valide n a ete selectionnee.',
+        'error_select_output_path': 'Veuillez selectionner un chemin de sortie valide.',
+        'error_output_path_create': 'Impossible de creer le chemin de sortie:\n{path}',
+        'msg_export_success': 'Export reussi:\n{path}',
+        'msg_export_failed': 'Echec de l export ({export_format}):\n{error}'
+    },
+    'it': {
+        'cmd_description': 'Esporta uno schizzo come DXF, SVG o PDF.',
+        'no_sketches': 'Nessuno schizzo trovato nel progetto attivo.',
+        'error_no_exportable_geometry': 'Lo schizzo non contiene geometria esportabile.',
+        'error_invalid_extent': 'Lo schizzo non ha dimensioni valide per l esportazione.',
+        'error_no_active_design': 'Nessun progetto attivo disponibile.',
+        'error_dxf_export_failed': 'Esportazione DXF non riuscita.',
+        'error_command_definition': 'Impossibile creare la definizione del comando.',
+        'error_workspace_missing': 'Workspace {workspace_id} non trovato.',
+        'error_panel_missing': 'Pannello di destinazione {panel_id} non trovato.',
+        'log_started': 'avviato',
+        'label_logo': 'Logo',
+        'label_sketches': 'Schizzi',
+        'label_export_format': 'Formato di esportazione',
+        'label_output_path': 'Percorso di output',
+        'label_output_path_select': 'Seleziona percorso di output',
+        'dialog_select_output_folder': 'Seleziona cartella di output',
+        'error_no_valid_sketch': 'Non e stato selezionato uno schizzo valido.',
+        'error_select_output_path': 'Selezionare un percorso di output valido.',
+        'error_output_path_create': 'Impossibile creare il percorso di output:\n{path}',
+        'msg_export_success': 'Esportazione completata:\n{path}',
+        'msg_export_failed': 'Esportazione non riuscita ({export_format}):\n{error}'
+    },
+    'pl': {
+        'cmd_description': 'Eksportuje szkic jako DXF, SVG lub PDF.',
+        'no_sketches': 'Nie znaleziono szkicow w aktywnym projekcie.',
+        'error_no_exportable_geometry': 'Szkic nie zawiera geometrii do eksportu.',
+        'error_invalid_extent': 'Szkic nie ma prawidlowego zakresu do eksportu.',
+        'error_no_active_design': 'Brak aktywnego projektu.',
+        'error_dxf_export_failed': 'Eksport DXF nie powiodl sie.',
+        'error_command_definition': 'Nie mozna utworzyc definicji polecenia.',
+        'error_workspace_missing': 'Nie znaleziono obszaru roboczego {workspace_id}.',
+        'error_panel_missing': 'Nie znaleziono panelu docelowego {panel_id}.',
+        'log_started': 'uruchomiono',
+        'label_logo': 'Logo',
+        'label_sketches': 'Szkice',
+        'label_export_format': 'Format eksportu',
+        'label_output_path': 'Sciezka wyjsciowa',
+        'label_output_path_select': 'Wybierz sciezke wyjsciowa',
+        'dialog_select_output_folder': 'Wybierz folder wyjsciowy',
+        'error_no_valid_sketch': 'Nie wybrano prawidlowego szkicu.',
+        'error_select_output_path': 'Wybierz prawidlowa sciezke wyjsciowa.',
+        'error_output_path_create': 'Nie mozna utworzyc sciezki wyjsciowej:\n{path}',
+        'msg_export_success': 'Eksport zakonczony:\n{path}',
+        'msg_export_failed': 'Eksport nie powiodl sie ({export_format}):\n{error}'
+    }
+}
+
+SUPPORTED_LANGUAGES = ('de', 'en', 'es', 'fr', 'it', 'pl')
+DEFAULT_LANGUAGE = 'en'
+FUSION_LANGUAGE_ENUM_NAMES = {
+    'de': ('GermanLanguage', 'GermanUserLanguage'),
+    'en': ('EnglishLanguage', 'EnglishUserLanguage'),
+    'es': ('SpanishLanguage', 'SpanishUserLanguage'),
+    'fr': ('FrenchLanguage', 'FrenchUserLanguage'),
+    'it': ('ItalianLanguage', 'ItalianUserLanguage'),
+    'pl': ('PolishLanguage', 'PolishUserLanguage')
+}
+LANGUAGE_KEYWORDS = (
+    ('german', 'de'),
+    ('deutsch', 'de'),
+    ('english', 'en'),
+    ('spanish', 'es'),
+    ('espanol', 'es'),
+    ('french', 'fr'),
+    ('francais', 'fr'),
+    ('italian', 'it'),
+    ('italiano', 'it'),
+    ('polish', 'pl'),
+    ('polski', 'pl')
+)
+
+
+def _normalize_language_hint(language_hint):
+    if not language_hint:
+        return ''
+    return str(language_hint).strip().lower().replace('-', '_')
+
+
+def _map_language_hint(language_hint):
+    normalized = _normalize_language_hint(language_hint)
+    if not normalized:
+        return ''
+
+    normalized_parts = normalized.split('_')
+    if normalized_parts and normalized_parts[0] in SUPPORTED_LANGUAGES:
+        return normalized_parts[0]
+
+    for keyword, language_code in LANGUAGE_KEYWORDS:
+        if keyword in normalized:
+            return language_code
+
+    return ''
+
+
+def _detect_language_from_fusion_preferences():
+    try:
+        preferences = getattr(app, 'preferences', None)
+        general_preferences = getattr(preferences, 'generalPreferences', None)
+        user_language = getattr(general_preferences, 'userLanguage', None)
+        if user_language is None:
+            return ''
+
+        user_languages_enum = getattr(adsk.core, 'UserLanguages', None)
+        if user_languages_enum is not None:
+            for language_code, enum_names in FUSION_LANGUAGE_ENUM_NAMES.items():
+                for enum_name in enum_names:
+                    enum_value = getattr(user_languages_enum, enum_name, None)
+                    if enum_value is not None and user_language == enum_value:
+                        return language_code
+
+        return _map_language_hint(user_language)
+    except:
+        return ''
+
+
+def _detect_language_from_system():
+    try:
+        env_locale = os.environ.get('LC_ALL') or os.environ.get('LANG') or os.environ.get('LANGUAGE')
+        detected_language = _map_language_hint(env_locale)
+        if detected_language:
+            return detected_language
+    except:
+        pass
+
+    try:
+        current_locale = locale.getlocale()[0]
+        return _map_language_hint(current_locale)
+    except:
+        return ''
+
+
+def _detect_language():
+    fusion_language = _detect_language_from_fusion_preferences()
+    if fusion_language:
+        return fusion_language
+
+    system_language = _detect_language_from_system()
+    if system_language:
+        return system_language
+
+    return DEFAULT_LANGUAGE
+
+
+LANGUAGE = _detect_language()
+
+
+def tr(key: str, **kwargs):
+    language_values = TRANSLATIONS.get(LANGUAGE, {})
+    fallback_values = TRANSLATIONS.get('en', {})
+    template = language_values.get(key, fallback_values.get(key, key))
+    return template.format(**kwargs)
+
 
 CMD_ID = f'{config.COMPANY_NAME}_{config.ADDIN_NAME}_cmdDialog'
 CMD_NAME = f'SketchWizard {VERSION}'
-CMD_Description = 'Exportiert eine Skizze als DXF, SVG oder PDF.'
+CMD_Description = tr('cmd_description')
 
 # Specify that the command will be promoted to the panel.
 IS_PROMOTED = False
 
-# Konstruktion > Volumenkoerper > Erstellen
+# Design > Solid > Create
 WORKSPACE_ID = 'FusionSolidEnvironment'
 PANEL_ID = 'SolidCreatePanel'
 LEGACY_PANEL_IDS = [
@@ -36,7 +283,7 @@ FORMAT_DROPDOWN_INPUT_ID = 'export_format_dropdown'
 OUTPUT_PATH_INPUT_ID = 'output_path'
 OUTPUT_PATH_BUTTON_INPUT_ID = 'output_path_button'
 
-NO_SKETCHES_TEXT = 'Keine Skizzen in der Konstruktion vorhanden.'
+NO_SKETCHES_TEXT = tr('no_sketches')
 SETTINGS_OUTPUT_PATH_KEY = 'output_path'
 SETTINGS_FILENAME = 'settings.json'
 SVG_STROKE_TOLERANCE_CM = 0.01  # 0.1 mm
@@ -122,7 +369,7 @@ def _add_logo_input(inputs: adsk.core.CommandInputs):
             continue
 
         try:
-            logo_input = inputs.addImageCommandInput(LOGO_IMAGE_INPUT_ID, 'Logo', candidate_path)
+            logo_input = inputs.addImageCommandInput(LOGO_IMAGE_INPUT_ID, tr('label_logo'), candidate_path)
             return logo_input
         except:
             pass
@@ -308,7 +555,7 @@ def _collect_export_strokes(sketch: adsk.fusion.Sketch):
             strokes.append(stroke)
 
     if not strokes:
-        return None, 'Die Skizze enthaelt keine exportierbaren Geometrien.'
+        return None, tr('error_no_exportable_geometry')
 
     all_x = [point[0] for stroke in strokes for point in stroke]
     all_y = [point[1] for stroke in strokes for point in stroke]
@@ -319,7 +566,7 @@ def _collect_export_strokes(sketch: adsk.fusion.Sketch):
     max_y = max(all_y)
 
     if _points_close((min_x, min_y), (max_x, max_y)):
-        return None, 'Die Skizze hat keine gueltige Ausdehnung fuer den Export.'
+        return None, tr('error_invalid_extent')
 
     return {
         'strokes': strokes,
@@ -376,7 +623,7 @@ def _export_sketch_as_svg(sketch: adsk.fusion.Sketch, output_file: str):
         )
 
     if not path_lines:
-        return False, 'Die Skizze enthaelt keine exportierbaren Geometrien.'
+        return False, tr('error_no_exportable_geometry')
 
     svg_lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -488,7 +735,7 @@ def _export_sketch_as_pdf(sketch: adsk.fusion.Sketch, output_file: str):
 def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
     design = _get_active_design()
     if design is None:
-        return False, 'Es ist kein aktives Design vorhanden.'
+        return False, tr('error_no_active_design')
 
     export_manager = design.exportManager
     if export_manager:
@@ -505,7 +752,7 @@ def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
     except:
         pass
 
-    return False, 'DXF-Export fehlgeschlagen.'
+    return False, tr('error_dxf_export_failed')
 
 
 def _export_selected_sketch(sketch: adsk.fusion.Sketch, output_dir: str, export_format: str):
@@ -531,7 +778,7 @@ def start():
         existing_def.deleteMe()
     cmd_def = ui.commandDefinitions.addButtonDefinition(CMD_ID, CMD_NAME, CMD_Description, ICON_FOLDER)
     if cmd_def is None:
-        futil.log(f'{CMD_NAME}: Command-Definition konnte nicht erstellt werden.', adsk.core.LogLevels.ErrorLogLevel)
+        futil.log(f'{CMD_NAME}: {tr("error_command_definition")}', adsk.core.LogLevels.ErrorLogLevel)
         return
 
     # Define an event handler for the command created event. It will be called when the button is clicked.
@@ -541,7 +788,10 @@ def start():
     # Get the target workspace the button will be created in.
     workspace = ui.workspaces.itemById(WORKSPACE_ID)
     if workspace is None:
-        futil.log(f'{CMD_NAME}: Workspace {WORKSPACE_ID} nicht gefunden.', adsk.core.LogLevels.ErrorLogLevel)
+        futil.log(
+            f'{CMD_NAME}: {tr("error_workspace_missing", workspace_id=WORKSPACE_ID)}',
+            adsk.core.LogLevels.ErrorLogLevel
+        )
         return
 
     # Remove stale controls from prior plugin locations.
@@ -551,7 +801,10 @@ def start():
     if panel is None:
         panel = ui.allToolbarPanels.itemById(PANEL_ID)
     if panel is None:
-        futil.log(f'{CMD_NAME}: Ziel-Panel {PANEL_ID} nicht gefunden.', adsk.core.LogLevels.ErrorLogLevel)
+        futil.log(
+            f'{CMD_NAME}: {tr("error_panel_missing", panel_id=PANEL_ID)}',
+            adsk.core.LogLevels.ErrorLogLevel
+        )
         return
 
     # Recreate control in target panel.
@@ -564,7 +817,7 @@ def start():
         control.isPromotedByDefault = IS_PROMOTED
     except:
         pass
-    futil.log(f'{CMD_NAME}: gestartet')
+    futil.log(f'{CMD_NAME}: {tr("log_started")}')
 
 
 # Executed when add-in is stopped.
@@ -603,7 +856,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
     sketch_dropdown = inputs.addDropDownCommandInput(
         SKETCH_DROPDOWN_INPUT_ID,
-        'Skizzen',
+        tr('label_sketches'),
         adsk.core.DropDownStyles.TextListDropDownStyle
     )
 
@@ -619,7 +872,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
     format_dropdown = inputs.addDropDownCommandInput(
         FORMAT_DROPDOWN_INPUT_ID,
-        'Exportformat',
+        tr('label_export_format'),
         adsk.core.DropDownStyles.TextListDropDownStyle
     )
     format_dropdown.listItems.add('DXF', True)
@@ -628,7 +881,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
     output_path_input = inputs.addStringValueInput(
         OUTPUT_PATH_INPUT_ID,
-        'Ausgabepfad',
+        tr('label_output_path'),
         _load_output_path()
     )
     try:
@@ -638,7 +891,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
     inputs.addBoolValueInput(
         OUTPUT_PATH_BUTTON_INPUT_ID,
-        'Ausgabepfad auswaehlen',
+        tr('label_output_path_select'),
         False,
         '',
         False
@@ -661,7 +914,7 @@ def command_input_changed(args: adsk.core.InputChangedEventArgs):
 
     try:
         folder_dialog = ui.createFolderDialog()
-        folder_dialog.title = 'Ausgabeordner auswaehlen'
+        folder_dialog.title = tr('dialog_select_output_folder')
         current_path = _get_output_path(args.inputs)
         if current_path and os.path.isdir(current_path):
             try:
@@ -697,19 +950,19 @@ def command_execute(args: adsk.core.CommandEventArgs):
     selected_label = _get_selected_sketch_label(inputs)
     selected_sketch = _find_sketch_by_label(selected_label)
     if selected_sketch is None:
-        ui.messageBox('Es wurde keine gueltige Skizze ausgewaehlt.')
+        ui.messageBox(tr('error_no_valid_sketch'))
         return
 
     output_path = _get_output_path(inputs)
     if not output_path:
-        ui.messageBox('Bitte waehlen Sie einen gueltigen Ausgabepfad aus.')
+        ui.messageBox(tr('error_select_output_path'))
         return
 
     if not os.path.isdir(output_path):
         try:
             os.makedirs(output_path, exist_ok=True)
         except:
-            ui.messageBox(f'Ausgabepfad kann nicht erstellt werden:\n{output_path}')
+            ui.messageBox(tr('error_output_path_create', path=output_path))
             return
 
     _persist_output_path(output_path)
@@ -717,9 +970,9 @@ def command_execute(args: adsk.core.CommandEventArgs):
     export_format = _get_selected_format(inputs)
     success, output_file, error_message = _export_selected_sketch(selected_sketch, output_path, export_format)
     if success:
-        ui.messageBox(f'Export erfolgreich:\n{output_file}')
+        ui.messageBox(tr('msg_export_success', path=output_file))
     else:
-        ui.messageBox(f'Export fehlgeschlagen ({export_format}):\n{error_message}')
+        ui.messageBox(tr('msg_export_failed', export_format=export_format, error=error_message))
 
 
 # This event handler is called when the command terminates.

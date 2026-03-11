@@ -1,3 +1,3 @@
 """Central add-in version."""
 
-VERSION = '0.5.5'
+VERSION = '0.6.1'

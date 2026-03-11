@@ -1,5 +1,15 @@
 # Version History
 
+## 0.6.1 (2026-03-11)
+
+- Added full i18n translation sets for `de`, `en`, `es`, `fr`, `it`, and `pl`.
+- Implemented automatic language selection based on Fusion 360 user language preferences with system-locale fallback.
+
+## 0.6.0 (2026-03-11)
+
+- Switched plugin UI language to English (menu, dialog labels, messages, and logs).
+- Added a simple translation structure (`LANGUAGE` + `TRANSLATIONS` + `tr(...)`) as a base for future localization.
+
 ## 0.5.5 (2026-03-11)
 
 - Logo-Auswahl auf `Logo_SketchWizard_200.png` festgelegt (PNG wird vor anderen Dateien verwendet).
