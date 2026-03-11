@@ -1,0 +1,29 @@
+#define MyAppName "SketchWizard"
+#define MyAppVersion "0.6.1"
+#define MyAppPublisher "Rene Triebenstein"
+#define MyAppSourceDir "..\SketchWizard"
+
+[Setup]
+AppId={{B3A520DE-9F0F-4C6A-B1F8-0370229E1518}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+DefaultDirName={userappdata}\Autodesk\Autodesk Fusion 360\API\AddIns\{#MyAppName}
+DisableDirPage=yes
+DefaultGroupName={#MyAppName}
+DisableProgramGroupPage=yes
+OutputDir=..\dist
+OutputBaseFilename={#MyAppName}_Setup_{#MyAppVersion}
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+PrivilegesRequired=lowest
+UsePreviousAppDir=yes
+DirExistsWarning=no
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Files]
+Source: "{#MyAppSourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "__pycache__\*,*.pyc,.vscode\*"
