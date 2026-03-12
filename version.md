@@ -1,5 +1,9 @@
 # Version History
 
+## 0.7.6 (2026-03-12)
+
+- Added `G-Code` as an additional export format.
+
 ## 0.7.5 (2026-03-12)
 
 - Added `HPGL` as an additional export format.
