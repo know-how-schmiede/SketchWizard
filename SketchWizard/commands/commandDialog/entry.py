@@ -31,6 +31,10 @@ TRANSLATIONS = {
         'label_logo': 'Logo',
         'label_sketches': 'Skizzen',
         'label_faces': 'Flaechen',
+        'label_projection_mode': 'Projektionsart',
+        'projection_mode_specified_objects': 'Angegebene Objekte',
+        'projection_mode_bodies': 'Koerper',
+        'label_deactivate_sketch': 'Skizze deaktivieren',
         'label_no_sketch': '-- Keine --',
         'prompt_select_face': 'Planare Flaeche eines Koerpers auswaehlen',
         'label_export_format': 'Exportformat',
@@ -61,6 +65,10 @@ TRANSLATIONS = {
         'label_logo': 'Logo',
         'label_sketches': 'Sketches',
         'label_faces': 'Faces',
+        'label_projection_mode': 'Projection Type',
+        'projection_mode_specified_objects': 'Specified Objects',
+        'projection_mode_bodies': 'Bodies',
+        'label_deactivate_sketch': 'Deactivate Sketch',
         'label_no_sketch': '-- None --',
         'prompt_select_face': 'Select a planar body face',
         'label_export_format': 'Export Format',
@@ -74,7 +82,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Export failed ({export_format}):\n{error}'
     },
     'es': {
-        'cmd_description': 'Exporta un boceto como DXF, SVG o PDF.',
+        'cmd_description': 'Exporta un boceto o una cara seleccionada como DXF, SVG o PDF.',
         'no_sketches': 'No se encontraron bocetos en el diseno activo.',
         'error_no_exportable_geometry': 'El boceto no contiene geometria exportable.',
         'error_invalid_extent': 'El boceto no tiene una extension valida para exportar.',
@@ -83,9 +91,20 @@ TRANSLATIONS = {
         'error_command_definition': 'No se pudo crear la definicion del comando.',
         'error_workspace_missing': 'No se encontro el espacio de trabajo {workspace_id}.',
         'error_panel_missing': 'No se encontro el panel de destino {panel_id}.',
+        'error_no_valid_face': 'No se selecciono una cara plana valida.',
+        'error_select_sketch_or_face': 'Seleccione un boceto o una cara.',
+        'error_face_sketch_create': 'No se pudo crear un boceto en la cara seleccionada.',
+        'error_face_projection': 'No se pudo proyectar el contorno de la cara seleccionada en el boceto.',
         'log_started': 'iniciado',
         'label_logo': 'Logo',
         'label_sketches': 'Bocetos',
+        'label_faces': 'Caras',
+        'label_projection_mode': 'Tipo de proyeccion',
+        'projection_mode_specified_objects': 'Objetos indicados',
+        'projection_mode_bodies': 'Cuerpos',
+        'label_deactivate_sketch': 'Desactivar boceto',
+        'label_no_sketch': '-- Ninguno --',
+        'prompt_select_face': 'Seleccione una cara plana del cuerpo',
         'label_export_format': 'Formato de exportacion',
         'label_output_path': 'Ruta de salida',
         'label_output_path_select': 'Seleccionar ruta de salida',
@@ -97,7 +116,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'La exportacion fallo ({export_format}):\n{error}'
     },
     'fr': {
-        'cmd_description': 'Exporte une esquisse en DXF, SVG ou PDF.',
+        'cmd_description': 'Exporte une esquisse ou une face selectionnee en DXF, SVG ou PDF.',
         'no_sketches': 'Aucune esquisse trouvee dans la conception active.',
         'error_no_exportable_geometry': 'L esquisse ne contient aucune geometrie exportable.',
         'error_invalid_extent': 'L esquisse n a pas de dimensions valides pour l export.',
@@ -106,9 +125,20 @@ TRANSLATIONS = {
         'error_command_definition': 'Impossible de creer la definition de la commande.',
         'error_workspace_missing': 'Espace de travail {workspace_id} introuvable.',
         'error_panel_missing': 'Panneau cible {panel_id} introuvable.',
+        'error_no_valid_face': 'Aucune face plane valide n a ete selectionnee.',
+        'error_select_sketch_or_face': 'Veuillez selectionner une esquisse ou une face.',
+        'error_face_sketch_create': 'Impossible de creer une esquisse sur la face selectionnee.',
+        'error_face_projection': 'Impossible de projeter le contour de la face selectionnee dans l esquisse.',
         'log_started': 'demarre',
         'label_logo': 'Logo',
         'label_sketches': 'Esquisses',
+        'label_faces': 'Faces',
+        'label_projection_mode': 'Type de projection',
+        'projection_mode_specified_objects': 'Objets indiques',
+        'projection_mode_bodies': 'Corps',
+        'label_deactivate_sketch': 'Desactiver l esquisse',
+        'label_no_sketch': '-- Aucune --',
+        'prompt_select_face': 'Selectionner une face plane d un corps',
         'label_export_format': 'Format d export',
         'label_output_path': 'Chemin de sortie',
         'label_output_path_select': 'Choisir le chemin de sortie',
@@ -120,7 +150,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Echec de l export ({export_format}):\n{error}'
     },
     'it': {
-        'cmd_description': 'Esporta uno schizzo come DXF, SVG o PDF.',
+        'cmd_description': 'Esporta uno schizzo o una faccia selezionata come DXF, SVG o PDF.',
         'no_sketches': 'Nessuno schizzo trovato nel progetto attivo.',
         'error_no_exportable_geometry': 'Lo schizzo non contiene geometria esportabile.',
         'error_invalid_extent': 'Lo schizzo non ha dimensioni valide per l esportazione.',
@@ -129,9 +159,20 @@ TRANSLATIONS = {
         'error_command_definition': 'Impossibile creare la definizione del comando.',
         'error_workspace_missing': 'Workspace {workspace_id} non trovato.',
         'error_panel_missing': 'Pannello di destinazione {panel_id} non trovato.',
+        'error_no_valid_face': 'Non e stata selezionata una faccia planare valida.',
+        'error_select_sketch_or_face': 'Selezionare uno schizzo o una faccia.',
+        'error_face_sketch_create': 'Impossibile creare uno schizzo sulla faccia selezionata.',
+        'error_face_projection': 'Impossibile proiettare il contorno della faccia selezionata nello schizzo.',
         'log_started': 'avviato',
         'label_logo': 'Logo',
         'label_sketches': 'Schizzi',
+        'label_faces': 'Facce',
+        'label_projection_mode': 'Tipo di proiezione',
+        'projection_mode_specified_objects': 'Oggetti indicati',
+        'projection_mode_bodies': 'Corpi',
+        'label_deactivate_sketch': 'Disattiva schizzo',
+        'label_no_sketch': '-- Nessuno --',
+        'prompt_select_face': 'Seleziona una faccia planare di un corpo',
         'label_export_format': 'Formato di esportazione',
         'label_output_path': 'Percorso di output',
         'label_output_path_select': 'Seleziona percorso di output',
@@ -143,7 +184,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Esportazione non riuscita ({export_format}):\n{error}'
     },
     'pl': {
-        'cmd_description': 'Eksportuje szkic jako DXF, SVG lub PDF.',
+        'cmd_description': 'Eksportuje szkic lub wybrana powierzchnie jako DXF, SVG lub PDF.',
         'no_sketches': 'Nie znaleziono szkicow w aktywnym projekcie.',
         'error_no_exportable_geometry': 'Szkic nie zawiera geometrii do eksportu.',
         'error_invalid_extent': 'Szkic nie ma prawidlowego zakresu do eksportu.',
@@ -152,9 +193,20 @@ TRANSLATIONS = {
         'error_command_definition': 'Nie mozna utworzyc definicji polecenia.',
         'error_workspace_missing': 'Nie znaleziono obszaru roboczego {workspace_id}.',
         'error_panel_missing': 'Nie znaleziono panelu docelowego {panel_id}.',
+        'error_no_valid_face': 'Nie wybrano prawidlowej plaskiej powierzchni.',
+        'error_select_sketch_or_face': 'Wybierz szkic lub powierzchnie.',
+        'error_face_sketch_create': 'Nie mozna utworzyc szkicu na wybranej powierzchni.',
+        'error_face_projection': 'Nie mozna rzutowac konturu wybranej powierzchni do szkicu.',
         'log_started': 'uruchomiono',
         'label_logo': 'Logo',
         'label_sketches': 'Szkice',
+        'label_faces': 'Powierzchnie',
+        'label_projection_mode': 'Typ rzutowania',
+        'projection_mode_specified_objects': 'Wskazane obiekty',
+        'projection_mode_bodies': 'Bryly',
+        'label_deactivate_sketch': 'Wylacz szkic',
+        'label_no_sketch': '-- Brak --',
+        'prompt_select_face': 'Wybierz plaska powierzchnie bryly',
         'label_export_format': 'Format eksportu',
         'label_output_path': 'Sciezka wyjsciowa',
         'label_output_path_select': 'Wybierz sciezke wyjsciowa',
@@ -294,12 +346,16 @@ ICON_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resource
 LOGO_IMAGE_INPUT_ID = 'logo_image'
 SKETCH_DROPDOWN_INPUT_ID = 'sketch_dropdown'
 FACE_SELECTION_INPUT_ID = 'face_selection'
+PROJECTION_MODE_DROPDOWN_INPUT_ID = 'projection_mode_dropdown'
 FORMAT_DROPDOWN_INPUT_ID = 'export_format_dropdown'
 OUTPUT_PATH_INPUT_ID = 'output_path'
 OUTPUT_PATH_BUTTON_INPUT_ID = 'output_path_button'
+DEACTIVATE_SKETCH_INPUT_ID = 'deactivate_sketch'
 
 NO_SKETCHES_TEXT = tr('no_sketches')
 NO_SKETCH_SELECTED_TEXT = tr('label_no_sketch')
+PROJECTION_MODE_SPECIFIED_OBJECTS = 'specified_objects'
+PROJECTION_MODE_BODIES = 'bodies'
 SETTINGS_OUTPUT_PATH_KEY = 'output_path'
 SETTINGS_FILENAME = 'settings.json'
 SVG_STROKE_TOLERANCE_CM = 0.01  # 0.1 mm
@@ -535,6 +591,15 @@ def _find_sketch_by_label(selected_label: str):
     return None
 
 
+def _get_selected_projection_mode(inputs: adsk.core.CommandInputs):
+    projection_dropdown = adsk.core.DropDownCommandInput.cast(inputs.itemById(PROJECTION_MODE_DROPDOWN_INPUT_ID))
+    if projection_dropdown is None or projection_dropdown.selectedItem is None:
+        return PROJECTION_MODE_SPECIFIED_OBJECTS
+    if projection_dropdown.selectedItem.name == tr('projection_mode_bodies'):
+        return PROJECTION_MODE_BODIES
+    return PROJECTION_MODE_SPECIFIED_OBJECTS
+
+
 def _get_selected_format(inputs: adsk.core.CommandInputs):
     format_dropdown = adsk.core.DropDownCommandInput.cast(inputs.itemById(FORMAT_DROPDOWN_INPUT_ID))
     if format_dropdown and format_dropdown.selectedItem:
@@ -549,10 +614,55 @@ def _get_output_path(inputs: adsk.core.CommandInputs):
     return ''
 
 
-def _sanitize_filename(filename: str):
+def _get_deactivate_sketch_option(inputs: adsk.core.CommandInputs):
+    deactivate_input = adsk.core.BoolValueCommandInput.cast(inputs.itemById(DEACTIVATE_SKETCH_INPUT_ID))
+    if deactivate_input is None:
+        return False
+    return bool(deactivate_input.value)
+
+
+def _deactivate_sketch_in_browser(sketch: adsk.fusion.Sketch):
+    if sketch is None or not sketch.isValid:
+        return
+
+    try:
+        sketch.isLightBulbOn = False
+        return
+    except:
+        pass
+
+    try:
+        sketch.isVisible = False
+    except:
+        pass
+
+
+def _sanitize_filename(filename: str, fallback: str = 'sketch_export'):
     cleaned = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename or '')
     cleaned = cleaned.strip().strip('.')
-    return cleaned or 'sketch_export'
+    return cleaned or fallback
+
+
+def _get_active_construction_name():
+    document_name = ''
+    try:
+        active_document = getattr(app, 'activeDocument', None)
+        document_name = getattr(active_document, 'name', '') if active_document else ''
+    except:
+        document_name = ''
+
+    if document_name:
+        return _sanitize_filename(os.path.splitext(document_name)[0], fallback='construction')
+
+    try:
+        design = _get_active_design()
+        root_component = design.rootComponent if design else None
+        if root_component and root_component.name:
+            return _sanitize_filename(root_component.name, fallback='construction')
+    except:
+        pass
+
+    return 'construction'
 
 
 def _to_mm(value_in_cm: float):
@@ -828,7 +938,9 @@ def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
 
 def _export_selected_sketch(sketch: adsk.fusion.Sketch, output_dir: str, export_format: str):
     extension = export_format.lower()
-    file_name = _sanitize_filename(sketch.name)
+    construction_name = _get_active_construction_name()
+    sketch_name = _sanitize_filename(sketch.name)
+    file_name = f'{construction_name}_{sketch_name}'
     output_file = os.path.join(output_dir, f'{file_name}.{extension}')
 
     if export_format == 'SVG':
@@ -928,7 +1040,38 @@ def _project_face_edges_to_sketch(sketch: adsk.fusion.Sketch, face: adsk.fusion.
         return False
 
 
-def _create_export_sketch_from_face(face: adsk.fusion.BRepFace):
+def _project_body_to_sketch(sketch: adsk.fusion.Sketch, face: adsk.fusion.BRepFace):
+    if sketch is None or face is None:
+        return False
+
+    body = getattr(face, 'body', None)
+    if body is None:
+        return False
+
+    native_body = None
+    try:
+        native_body = body.nativeObject
+    except:
+        native_body = None
+    target_body = native_body if native_body else body
+
+    try:
+        projection_result = sketch.project(target_body)
+        return bool(projection_result and projection_result.count > 0)
+    except:
+        return False
+
+
+def _project_face_to_sketch(sketch: adsk.fusion.Sketch, face: adsk.fusion.BRepFace, projection_mode: str):
+    if projection_mode == PROJECTION_MODE_BODIES:
+        return _project_body_to_sketch(sketch, face)
+    return _project_face_edges_to_sketch(sketch, face)
+
+
+def _create_export_sketch_from_face(
+    face: adsk.fusion.BRepFace,
+    projection_mode: str = PROJECTION_MODE_SPECIFIED_OBJECTS
+):
     if face is None or not face.isValid:
         return None, tr('error_no_valid_face')
 
@@ -967,7 +1110,7 @@ def _create_export_sketch_from_face(face: adsk.fusion.BRepFace):
     except:
         pass
 
-    if not _project_face_edges_to_sketch(new_sketch, target_face):
+    if not _project_face_to_sketch(new_sketch, target_face, projection_mode):
         _try_delete_sketch(new_sketch)
         return None, tr('error_face_projection')
 
@@ -1083,6 +1226,14 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     face_selection_input.addSelectionFilter('PlanarFaces')
     face_selection_input.setSelectionLimits(0, 1)
 
+    projection_mode_dropdown = inputs.addDropDownCommandInput(
+        PROJECTION_MODE_DROPDOWN_INPUT_ID,
+        tr('label_projection_mode'),
+        adsk.core.DropDownStyles.TextListDropDownStyle
+    )
+    projection_mode_dropdown.listItems.add(tr('projection_mode_specified_objects'), True)
+    projection_mode_dropdown.listItems.add(tr('projection_mode_bodies'), False)
+
     format_dropdown = inputs.addDropDownCommandInput(
         FORMAT_DROPDOWN_INPUT_ID,
         tr('label_export_format'),
@@ -1106,6 +1257,14 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
         OUTPUT_PATH_BUTTON_INPUT_ID,
         tr('label_output_path_select'),
         False,
+        '',
+        False
+    )
+
+    inputs.addBoolValueInput(
+        DEACTIVATE_SKETCH_INPUT_ID,
+        tr('label_deactivate_sketch'),
+        True,
         '',
         False
     )
@@ -1172,13 +1331,16 @@ def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
 def command_execute(args: adsk.core.CommandEventArgs):
     inputs = args.command.commandInputs
     selected_sketch = None
+    created_sketch_from_face = False
 
     selected_face = _get_selected_face(inputs)
     if selected_face is not None:
-        selected_sketch, create_error = _create_export_sketch_from_face(selected_face)
+        projection_mode = _get_selected_projection_mode(inputs)
+        selected_sketch, create_error = _create_export_sketch_from_face(selected_face, projection_mode)
         if selected_sketch is None:
             ui.messageBox(create_error or tr('error_face_sketch_create'))
             return
+        created_sketch_from_face = True
     else:
         selected_label = _get_selected_sketch_label(inputs)
         selected_sketch = _find_sketch_by_label(selected_label)
@@ -1203,6 +1365,8 @@ def command_execute(args: adsk.core.CommandEventArgs):
     export_format = _get_selected_format(inputs)
     success, output_file, error_message = _export_selected_sketch(selected_sketch, output_path, export_format)
     if success:
+        if created_sketch_from_face and _get_deactivate_sketch_option(inputs):
+            _deactivate_sketch_in_browser(selected_sketch)
         ui.messageBox(tr('msg_export_success', path=output_file))
     else:
         ui.messageBox(tr('msg_export_failed', export_format=export_format, error=error_message))

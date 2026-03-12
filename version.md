@@ -1,5 +1,25 @@
 # Version History
 
+## 0.7.4 (2026-03-12)
+
+- Updated i18n translations for `es`, `fr`, `it`, and `pl` to cover all current face/projection/deactivation dialog options and related messages.
+- Updated localized command descriptions to include sketch-or-face export behavior.
+
+## 0.7.3 (2026-03-12)
+
+- Added checkbox option `Skizze deaktivieren` to the command dialog.
+- If enabled, an automatically created export sketch (from selected face) is deactivated in the Fusion Browser after successful export.
+
+## 0.7.2 (2026-03-12)
+
+- Added a new dialog dropdown to select projection mode: `Angegebene Objekte` or `Koerper`.
+- The selected projection mode is now used as projection filter during automatic sketch creation from a selected face.
+
+## 0.7.1 (2026-03-12)
+
+- Changed export file naming scheme to `NameKonstruktion_NameSkizze` for DXF/SVG/PDF exports.
+- Construction name is derived from the active Fusion document name (fallback: root component name / `construction`).
+
 ## 0.7.0 (2026-03-12)
 
 - Added optional planar face selection as export source in addition to direct sketch selection.

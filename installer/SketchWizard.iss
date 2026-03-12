@@ -1,5 +1,5 @@
 #define MyAppName "SketchWizard"
-#define MyAppVersion "0.7.0"
+#define MyAppVersion "0.7.4"
 #define MyAppPublisher "Rene Triebenstein"
 #define MyAppSourceDir "..\SketchWizard"
 
