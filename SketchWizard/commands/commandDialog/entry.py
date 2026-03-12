@@ -14,7 +14,7 @@ ui = app.userInterface
 
 TRANSLATIONS = {
     'de': {
-        'cmd_description': 'Exportiert eine Skizze als DXF, SVG oder PDF.',
+        'cmd_description': 'Exportiert eine Skizze oder eine ausgewaehlte Flaeche als DXF, SVG oder PDF.',
         'no_sketches': 'Keine Skizzen im aktiven Design gefunden.',
         'error_no_exportable_geometry': 'Die Skizze enthaelt keine exportierbare Geometrie.',
         'error_invalid_extent': 'Die Skizze hat keine gueltige Ausdehnung fuer den Export.',
@@ -23,9 +23,16 @@ TRANSLATIONS = {
         'error_command_definition': 'Die Befehlsdefinition konnte nicht erstellt werden.',
         'error_workspace_missing': 'Workspace {workspace_id} wurde nicht gefunden.',
         'error_panel_missing': 'Ziel-Panel {panel_id} wurde nicht gefunden.',
+        'error_no_valid_face': 'Es wurde keine gueltige planare Flaeche ausgewaehlt.',
+        'error_select_sketch_or_face': 'Bitte eine Skizze oder eine Flaeche auswaehlen.',
+        'error_face_sketch_create': 'Skizze auf der ausgewaehlten Flaeche konnte nicht erstellt werden.',
+        'error_face_projection': 'Die Kontur der ausgewaehlten Flaeche konnte nicht in die Skizze projiziert werden.',
         'log_started': 'gestartet',
         'label_logo': 'Logo',
         'label_sketches': 'Skizzen',
+        'label_faces': 'Flaechen',
+        'label_no_sketch': '-- Keine --',
+        'prompt_select_face': 'Planare Flaeche eines Koerpers auswaehlen',
         'label_export_format': 'Exportformat',
         'label_output_path': 'Ausgabepfad',
         'label_output_path_select': 'Ausgabepfad waehlen',
@@ -37,7 +44,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Export fehlgeschlagen ({export_format}):\n{error}'
     },
     'en': {
-        'cmd_description': 'Exports a sketch as DXF, SVG, or PDF.',
+        'cmd_description': 'Exports a sketch or a selected face as DXF, SVG, or PDF.',
         'no_sketches': 'No sketches found in the active design.',
         'error_no_exportable_geometry': 'The sketch contains no exportable geometry.',
         'error_invalid_extent': 'The sketch has no valid extent for export.',
@@ -46,9 +53,16 @@ TRANSLATIONS = {
         'error_command_definition': 'Command definition could not be created.',
         'error_workspace_missing': 'Workspace {workspace_id} was not found.',
         'error_panel_missing': 'Target panel {panel_id} was not found.',
+        'error_no_valid_face': 'No valid planar face was selected.',
+        'error_select_sketch_or_face': 'Please select a sketch or a face.',
+        'error_face_sketch_create': 'Could not create a sketch on the selected face.',
+        'error_face_projection': 'Could not project the selected face contour into the sketch.',
         'log_started': 'started',
         'label_logo': 'Logo',
         'label_sketches': 'Sketches',
+        'label_faces': 'Faces',
+        'label_no_sketch': '-- None --',
+        'prompt_select_face': 'Select a planar body face',
         'label_export_format': 'Export Format',
         'label_output_path': 'Output Path',
         'label_output_path_select': 'Select Output Path',
@@ -279,15 +293,18 @@ ICON_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resource
 
 LOGO_IMAGE_INPUT_ID = 'logo_image'
 SKETCH_DROPDOWN_INPUT_ID = 'sketch_dropdown'
+FACE_SELECTION_INPUT_ID = 'face_selection'
 FORMAT_DROPDOWN_INPUT_ID = 'export_format_dropdown'
 OUTPUT_PATH_INPUT_ID = 'output_path'
 OUTPUT_PATH_BUTTON_INPUT_ID = 'output_path_button'
 
 NO_SKETCHES_TEXT = tr('no_sketches')
+NO_SKETCH_SELECTED_TEXT = tr('label_no_sketch')
 SETTINGS_OUTPUT_PATH_KEY = 'output_path'
 SETTINGS_FILENAME = 'settings.json'
 SVG_STROKE_TOLERANCE_CM = 0.01  # 0.1 mm
 PDF_PT_PER_MM = 72.0 / 25.4
+EXPORT_SKETCH_NAME_PREFIX = 'Export'
 
 # Local list of event handlers used to maintain a reference so
 # they are not released and garbage collected.
@@ -441,17 +458,71 @@ def _get_selected_sketch_label(inputs: adsk.core.CommandInputs):
     return sketch_dropdown.selectedItem.name
 
 
+def _is_real_sketch_label(label: str):
+    return bool(label) and label not in (NO_SKETCHES_TEXT, NO_SKETCH_SELECTED_TEXT)
+
+
+def _select_dropdown_item(dropdown: adsk.core.DropDownCommandInput, target_name: str):
+    if dropdown is None or not target_name:
+        return False
+
+    for index in range(dropdown.listItems.count):
+        item = dropdown.listItems.item(index)
+        if item and item.name == target_name:
+            item.isSelected = True
+            return True
+    return False
+
+
+def _set_sketch_dropdown_to_none(inputs: adsk.core.CommandInputs):
+    sketch_dropdown = adsk.core.DropDownCommandInput.cast(inputs.itemById(SKETCH_DROPDOWN_INPUT_ID))
+    if sketch_dropdown is None or not sketch_dropdown.isEnabled:
+        return
+    _select_dropdown_item(sketch_dropdown, NO_SKETCH_SELECTED_TEXT)
+
+
+def _clear_face_selection(inputs: adsk.core.CommandInputs):
+    face_input = adsk.core.SelectionCommandInput.cast(inputs.itemById(FACE_SELECTION_INPUT_ID))
+    if face_input is None:
+        return
+
+    try:
+        face_input.clearSelection()
+    except:
+        pass
+
+
+def _get_selected_face(inputs: adsk.core.CommandInputs):
+    face_input = adsk.core.SelectionCommandInput.cast(inputs.itemById(FACE_SELECTION_INPUT_ID))
+    if face_input is None or face_input.selectionCount < 1:
+        return None
+
+    try:
+        selection = face_input.selection(0)
+        entity = selection.entity if selection else None
+        face = adsk.fusion.BRepFace.cast(entity)
+        if face and face.isValid:
+            return face
+    except:
+        pass
+    return None
+
+
 def _has_valid_sketch_selection(inputs: adsk.core.CommandInputs):
     sketch_dropdown = adsk.core.DropDownCommandInput.cast(inputs.itemById(SKETCH_DROPDOWN_INPUT_ID))
     if sketch_dropdown is None or not sketch_dropdown.isEnabled:
         return False
     if sketch_dropdown.selectedItem is None:
         return False
-    return sketch_dropdown.selectedItem.name != NO_SKETCHES_TEXT
+    return _is_real_sketch_label(sketch_dropdown.selectedItem.name)
+
+
+def _has_valid_face_selection(inputs: adsk.core.CommandInputs):
+    return _get_selected_face(inputs) is not None
 
 
 def _find_sketch_by_label(selected_label: str):
-    if not selected_label:
+    if not _is_real_sketch_label(selected_label):
         return None
 
     sketch = sketch_objects_by_label.get(selected_label)
@@ -770,6 +841,139 @@ def _export_selected_sketch(sketch: adsk.fusion.Sketch, output_dir: str, export_
     return success, output_file, error_message
 
 
+def _collect_all_sketch_names():
+    names = set()
+    design = _get_active_design()
+    if design is None:
+        return names
+
+    components = design.allComponents
+    for i in range(components.count):
+        component = components.item(i)
+        if component is None:
+            continue
+
+        for j in range(component.sketches.count):
+            sketch = component.sketches.item(j)
+            if sketch and sketch.name:
+                names.add(sketch.name)
+
+    return names
+
+
+def _next_export_sketch_name():
+    existing_names = _collect_all_sketch_names()
+    index = 1
+    while True:
+        candidate = f'{EXPORT_SKETCH_NAME_PREFIX}{index}'
+        if candidate not in existing_names:
+            return candidate
+        index += 1
+
+
+def _try_delete_sketch(sketch: adsk.fusion.Sketch):
+    if sketch is None:
+        return
+    try:
+        sketch.deleteMe()
+    except:
+        pass
+
+
+def _project_face_edges_to_sketch(sketch: adsk.fusion.Sketch, face: adsk.fusion.BRepFace):
+    if sketch is None or face is None:
+        return False
+
+    projected_edge_tokens = set()
+    projected_any = False
+
+    loops = getattr(face, 'loops', None)
+    if loops is None:
+        return False
+
+    for i in range(loops.count):
+        loop = loops.item(i)
+        if loop is None:
+            continue
+
+        edges = getattr(loop, 'edges', None)
+        if edges is None:
+            continue
+
+        for j in range(edges.count):
+            edge = edges.item(j)
+            if edge is None:
+                continue
+
+            temp_id = getattr(edge, 'tempId', None)
+            edge_token = str(temp_id) if temp_id is not None else str(id(edge))
+            if edge_token in projected_edge_tokens:
+                continue
+            projected_edge_tokens.add(edge_token)
+
+            try:
+                projection_result = sketch.project(edge)
+                if projection_result and projection_result.count > 0:
+                    projected_any = True
+            except:
+                pass
+
+    if projected_any:
+        return True
+
+    try:
+        projection_result = sketch.project(face)
+        return bool(projection_result and projection_result.count > 0)
+    except:
+        return False
+
+
+def _create_export_sketch_from_face(face: adsk.fusion.BRepFace):
+    if face is None or not face.isValid:
+        return None, tr('error_no_valid_face')
+
+    native_face = None
+    try:
+        native_face = face.nativeObject
+    except:
+        native_face = None
+    target_face = native_face if native_face else face
+
+    try:
+        if adsk.core.Plane.cast(target_face.geometry) is None:
+            return None, tr('error_no_valid_face')
+    except:
+        return None, tr('error_no_valid_face')
+
+    target_component = None
+    try:
+        target_component = target_face.body.parentComponent if target_face.body else None
+    except:
+        target_component = None
+    if target_component is None:
+        return None, tr('error_face_sketch_create')
+
+    new_sketch = None
+    try:
+        new_sketch = target_component.sketches.add(target_face)
+    except:
+        return None, tr('error_face_sketch_create')
+
+    if new_sketch is None:
+        return None, tr('error_face_sketch_create')
+
+    try:
+        new_sketch.name = _next_export_sketch_name()
+    except:
+        pass
+
+    if not _project_face_edges_to_sketch(new_sketch, target_face):
+        _try_delete_sketch(new_sketch)
+        return None, tr('error_face_projection')
+
+    return new_sketch, ''
+
+
 # Executed when add-in is run.
 def start():
     # Recreate command definition so name/version updates are applied immediately.
@@ -862,6 +1066,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
     sketch_entries = _collect_sketch_entries()
     if sketch_entries:
+        sketch_dropdown.listItems.add(NO_SKETCH_SELECTED_TEXT, False)
         for index, entry in enumerate(sketch_entries):
             label, sketch = entry
             sketch_objects_by_label[label] = sketch
@@ -869,6 +1074,14 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     else:
         sketch_dropdown.listItems.add(NO_SKETCHES_TEXT, True)
         sketch_dropdown.isEnabled = False
+
+    face_selection_input = inputs.addSelectionInput(
+        FACE_SELECTION_INPUT_ID,
+        tr('label_faces'),
+        tr('prompt_select_face')
+    )
+    face_selection_input.addSelectionFilter('PlanarFaces')
+    face_selection_input.setSelectionLimits(0, 1)
 
     format_dropdown = inputs.addDropDownCommandInput(
         FORMAT_DROPDOWN_INPUT_ID,
@@ -905,6 +1118,16 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
 
 def command_input_changed(args: adsk.core.InputChangedEventArgs):
     changed_input = args.input
+    if changed_input.id == SKETCH_DROPDOWN_INPUT_ID:
+        if _has_valid_sketch_selection(args.inputs):
+            _clear_face_selection(args.inputs)
+        return
+
+    if changed_input.id == FACE_SELECTION_INPUT_ID:
+        if _has_valid_face_selection(args.inputs):
+            _set_sketch_dropdown_to_none(args.inputs)
+        return
+
     if changed_input.id != OUTPUT_PATH_BUTTON_INPUT_ID:
         return
 
@@ -935,10 +1158,11 @@ def command_input_changed(args: adsk.core.InputChangedEventArgs):
 
 def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
     has_sketch_selection = _has_valid_sketch_selection(args.inputs)
+    has_face_selection = _has_valid_face_selection(args.inputs)
     output_path = _get_output_path(args.inputs)
     selected_format = _get_selected_format(args.inputs)
 
-    is_valid = has_sketch_selection
+    is_valid = has_sketch_selection or has_face_selection
     is_valid = is_valid and bool(output_path)
     is_valid = is_valid and selected_format in ('DXF', 'SVG', 'PDF')
     args.areInputsValid = is_valid
@@ -947,11 +1171,20 @@ def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
 # This event handler is called when the user clicks the OK button in the command dialog.
 def command_execute(args: adsk.core.CommandEventArgs):
     inputs = args.command.commandInputs
-    selected_label = _get_selected_sketch_label(inputs)
-    selected_sketch = _find_sketch_by_label(selected_label)
-    if selected_sketch is None:
-        ui.messageBox(tr('error_no_valid_sketch'))
-        return
+    selected_sketch = None
+
+    selected_face = _get_selected_face(inputs)
+    if selected_face is not None:
+        selected_sketch, create_error = _create_export_sketch_from_face(selected_face)
+        if selected_sketch is None:
+            ui.messageBox(create_error or tr('error_face_sketch_create'))
+            return
+    else:
+        selected_label = _get_selected_sketch_label(inputs)
+        selected_sketch = _find_sketch_by_label(selected_label)
+        if selected_sketch is None:
+            ui.messageBox(tr('error_select_sketch_or_face'))
+            return
 
     output_path = _get_output_path(inputs)
     if not output_path:

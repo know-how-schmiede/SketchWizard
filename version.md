@@ -1,5 +1,11 @@
 # Version History
 
+## 0.7.0 (2026-03-12)
+
+- Added optional planar face selection as export source in addition to direct sketch selection.
+- When a face is selected, SketchWizard now creates a new sketch automatically (`Export1`, `Export2`, ...) on that face and projects the face contour.
+- Enforced mutual exclusivity in the dialog: selecting a sketch clears face selection, selecting a face clears sketch selection.
+
 ## 0.6.1 (2026-03-11)
 
 - Added full i18n translation sets for `de`, `en`, `es`, `fr`, `it`, and `pl`.
