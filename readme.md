@@ -5,7 +5,10 @@ It is built for fast handoff from CAD to CAM, laser, plotter, and documentation 
 
 ![Logo SketchWizard](/images/Logo_SketchWizard_200.png)
 
-![SketchWizard Dialog](/images/SketschWizard_Dialog.jpg)
+## Video Demo
+
+[![Watch the video on YouTube](https://img.youtube.com/vi/yTXmVZhCibU/hqdefault.jpg)](https://youtu.be/yTXmVZhCibU)
+
 
 ## Current Feature Set
 
@@ -30,6 +33,8 @@ It is built for fast handoff from CAD to CAM, laser, plotter, and documentation 
   - `<ConstructionName>_<SketchName>.<ext>`
 - UI translations:
   - `de`, `en`, `es`, `fr`, `it`, `pl`
+
+![SketchWizard Dialog](/images/SketschWizard_Dialog_2.jpg)
 
 ## Typical Workflow
 
