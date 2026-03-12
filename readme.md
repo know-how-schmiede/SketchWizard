@@ -1,192 +1,102 @@
 # SketchWizard
 
-**SketchWizard** is a Fusion 360 Add-In that allows you to export any sketch as a clean vector file for use in other software such as CAM tools, laser cutters, plotters, and graphic design applications.
+**SketchWizard** is a Fusion 360 add-in for exporting sketches and planar faces into fabrication-ready files.
+It is built for fast handoff from CAD to CAM, laser, plotter, and documentation workflows.
 
 ![Logo SketchWizard](/images/Logo_SketchWizard_200.png)
 
-
-The add-in provides a simple workflow: select a sketch from your design and export it directly as a vector file (e.g. SVG or DXF) with a **1:1 scale**.
-
-Perfect for workflows involving:
-
-- CNC machining
-- Laser cutting
-- Plotters
-- CAM software (e.g. EstlCAM)
-- Graphic software (Inkscape, Illustrator)
-- Documentation and templates
-
----
-
 ![SketchWizard Dialog](/images/SketschWizard_Dialog.jpg)
 
-# Features
+## Current Feature Set
 
-✔ Export Fusion sketches directly to **SVG**  
-✔ Planned support for **DXF export**  
-✔ **1:1 scale export** (1 mm in Fusion = 1 mm in the exported file)  
-✔ Select any sketch in the design  
-✔ Custom output path  
-✔ Clean vector output optimized for CAM workflows  
+- Export source can be:
+  - an existing sketch, or
+  - a selected planar body face (auto-creates an export sketch)
+- Export formats:
+  - `DXF`
+  - `SVG`
+  - `PDF`
+  - `HPGL`
+  - `G-Code` (`.gcode`)
+- Projection mode for face-based exports:
+  - `Specified Objects`
+  - `Bodies`
+- Optional `Deactivate Sketch` after successful export of an auto-created face sketch
+- Dialog safety logic:
+  - selecting a sketch clears face selection
+  - selecting a face clears sketch selection
+- Persistent output path (stored between runs)
+- Automatic filename scheme:
+  - `<ConstructionName>_<SketchName>.<ext>`
+- UI translations:
+  - `de`, `en`, `es`, `fr`, `it`, `pl`
 
----
+## Typical Workflow
 
-# Typical Workflow
+1. Start SketchWizard from Fusion 360.
+2. Select either a sketch or a planar face.
+3. If a face is selected, choose the projection mode.
+4. Choose export format (`DXF`, `SVG`, `PDF`, `HPGL`, or `G-Code`).
+5. Select output folder.
+6. Optionally enable `Deactivate Sketch` (for auto-created face sketches).
+7. Run export.
 
-1. Create a sketch in Fusion 360
-2. Draw geometry or project body edges into the sketch
-3. Finish the sketch
-4. Launch **SketchWizard**
-5. Select the sketch you want to export
-6. Choose the output path
-7. Export the file
+## Supported Export Formats
 
-The resulting file can be directly used in other applications.
+| Format | Extension | Typical Use |
+| --- | --- | --- |
+| DXF | `.dxf` | CAM/CNC pipelines |
+| SVG | `.svg` | Laser cutting, vector tools |
+| PDF | `.pdf` | Documentation and print workflows |
+| HPGL | `.hpgl` | Plotters and legacy pen systems |
+| G-Code | `.gcode` | CNC toolpath handoff (2D contour output) |
 
----
+## Installation
 
-# Supported Geometry
+1. Clone the repository:
 
-SketchWizard currently supports:
-
-- Lines
-- Arcs
-- Circles
-- Polylines
-
-Future versions may include:
-
-- Splines
-- Layers
-- Color based laser operations
-- Multi-format export
-
----
-
-# Planned Export Formats
-
-| Format | Use Case |
-|------|------|
-| SVG | Laser cutting, graphic tools |
-| DXF | CAM software, CNC |
-| HPGL | Plotters |
-| PDF | Documentation |
-| G-Code | Direct machining |
-
----
-
-# Installation
-
-1. Download or clone the repository
-
+```bash
 git clone https://github.com/know-how-schmiede/SketchWizard.git
+```
 
-2. Copy the folder into your Fusion 360 **AddIns directory**
+2. Copy the folder to your Fusion 360 `AddIns` directory.
 
-Typical location:
+Typical Windows path:
 
-Windows
+```text
 %appdata%\Autodesk\Autodesk Fusion 360\API\AddIns
+```
 
+3. Restart Fusion 360.
+4. Open `UTILITIES -> Add-Ins -> Scripts and Add-Ins`.
+5. Run **SketchWizard**.
 
-3. Restart Fusion 360
+## Project Status
 
-4. Open:
+- Current version: `0.7.6`
+- Detailed changes: see `version.md`
 
-UTILITIES → Add-Ins → Scripts and Add-Ins
+## Roadmap
 
+Planned improvements include:
 
-5. Run **SketchWizard**
-
----
-
-# Example Use Cases
-
-### Laser Cutting
-Export a sketch to SVG and import it into:
-
-- LightBurn
-- Inkscape
-- LaserGRBL
-
-### CNC / CAM
-
-Export DXF and open it in:
-
-- EstlCAM
-- SheetCAM
-- FreeCAD
-
-### Plotter / Vinyl Cutting
-
-Export SVG for:
-
-- Cricut
-- Silhouette
-- Vinyl plotters
-
----
-
-# Project Goals
-
-SketchWizard aims to simplify the workflow between **Fusion 360 and fabrication tools** by providing a fast and clean export of sketch geometry.
-
-The goal is to create a lightweight tool that removes unnecessary steps between CAD and manufacturing.
-
----
-
-# Roadmap
-
-Planned improvements:
-
-- DXF exporter
-- spline support
 - multi-sketch export
 - layer support
-- laser color mapping
-- UI improvements
 - export presets
+- additional CAM-specific controls for G-Code output
 
----
+## Contributing
 
-# Contributing
+Contributions, bug reports, and feature requests are welcome.
+Please open an issue or submit a pull request.
 
-Contributions, bug reports and feature requests are welcome.
-
-If you have ideas for improvements or additional export formats, feel free to open an issue.
-
----
-
-# License
+## License
 
 MIT License
 
----
+## Author
 
-# Author
+**Rene Triebenstein**  
+Know-How-Schmiede
 
-**René Triebenstein**
-
-Know-How-Schmiede  
-YouTube | Maker Projects | Fusion 360 Tutorials
-
-GitHub:  
-https://github.com/know-how-schmiede
-
----
-
-# Related Projects
-
-- **InsertWizard** – Fusion 360 heat-set insert generator  
-- **NeoFab** – Maker fabrication management system  
-- **PrintFleet** – 3D printer fleet monitoring
-
----
-
-# Support the Project
-
-If you like this tool, consider supporting the project by:
-
-⭐ starring the repository  
-📢 sharing it with other makers  
-🛠 contributing improvements
+GitHub: https://github.com/know-how-schmiede
