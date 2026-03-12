@@ -14,7 +14,7 @@ ui = app.userInterface
 
 TRANSLATIONS = {
     'de': {
-        'cmd_description': 'Exportiert eine Skizze oder eine ausgewaehlte Flaeche als DXF, SVG oder PDF.',
+        'cmd_description': 'Exportiert eine Skizze oder eine ausgewaehlte Flaeche als DXF, SVG, PDF oder HPGL.',
         'no_sketches': 'Keine Skizzen im aktiven Design gefunden.',
         'error_no_exportable_geometry': 'Die Skizze enthaelt keine exportierbare Geometrie.',
         'error_invalid_extent': 'Die Skizze hat keine gueltige Ausdehnung fuer den Export.',
@@ -48,7 +48,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Export fehlgeschlagen ({export_format}):\n{error}'
     },
     'en': {
-        'cmd_description': 'Exports a sketch or a selected face as DXF, SVG, or PDF.',
+        'cmd_description': 'Exports a sketch or a selected face as DXF, SVG, PDF, or HPGL.',
         'no_sketches': 'No sketches found in the active design.',
         'error_no_exportable_geometry': 'The sketch contains no exportable geometry.',
         'error_invalid_extent': 'The sketch has no valid extent for export.',
@@ -82,7 +82,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Export failed ({export_format}):\n{error}'
     },
     'es': {
-        'cmd_description': 'Exporta un boceto o una cara seleccionada como DXF, SVG o PDF.',
+        'cmd_description': 'Exporta un boceto o una cara seleccionada como DXF, SVG, PDF o HPGL.',
         'no_sketches': 'No se encontraron bocetos en el diseno activo.',
         'error_no_exportable_geometry': 'El boceto no contiene geometria exportable.',
         'error_invalid_extent': 'El boceto no tiene una extension valida para exportar.',
@@ -116,7 +116,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'La exportacion fallo ({export_format}):\n{error}'
     },
     'fr': {
-        'cmd_description': 'Exporte une esquisse ou une face selectionnee en DXF, SVG ou PDF.',
+        'cmd_description': 'Exporte une esquisse ou une face selectionnee en DXF, SVG, PDF ou HPGL.',
         'no_sketches': 'Aucune esquisse trouvee dans la conception active.',
         'error_no_exportable_geometry': 'L esquisse ne contient aucune geometrie exportable.',
         'error_invalid_extent': 'L esquisse n a pas de dimensions valides pour l export.',
@@ -150,7 +150,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Echec de l export ({export_format}):\n{error}'
     },
     'it': {
-        'cmd_description': 'Esporta uno schizzo o una faccia selezionata come DXF, SVG o PDF.',
+        'cmd_description': 'Esporta uno schizzo o una faccia selezionata come DXF, SVG, PDF o HPGL.',
         'no_sketches': 'Nessuno schizzo trovato nel progetto attivo.',
         'error_no_exportable_geometry': 'Lo schizzo non contiene geometria esportabile.',
         'error_invalid_extent': 'Lo schizzo non ha dimensioni valide per l esportazione.',
@@ -184,7 +184,7 @@ TRANSLATIONS = {
         'msg_export_failed': 'Esportazione non riuscita ({export_format}):\n{error}'
     },
     'pl': {
-        'cmd_description': 'Eksportuje szkic lub wybrana powierzchnie jako DXF, SVG lub PDF.',
+        'cmd_description': 'Eksportuje szkic lub wybrana powierzchnie jako DXF, SVG, PDF lub HPGL.',
         'no_sketches': 'Nie znaleziono szkicow w aktywnym projekcie.',
         'error_no_exportable_geometry': 'Szkic nie zawiera geometrii do eksportu.',
         'error_invalid_extent': 'Szkic nie ma prawidlowego zakresu do eksportu.',
@@ -913,6 +913,56 @@ def _export_sketch_as_pdf(sketch: adsk.fusion.Sketch, output_file: str):
     return True, ''
 
 
+def _export_sketch_as_hpgl(sketch: adsk.fusion.Sketch, output_file: str):
+    export_data, error_message = _collect_export_strokes(sketch)
+    if export_data is None:
+        return False, error_message
+
+    strokes = export_data['strokes']
+    min_x = export_data['min_x']
+    min_y = export_data['min_y']
+
+    margin_mm = 1.0
+    hpgl_units_per_mm = 40.0  # Standard HPGL user units.
+
+    def map_point(point):
+        x_mm = (point[0] - min_x) + margin_mm
+        y_mm = (point[1] - min_y) + margin_mm
+        return int(round(x_mm * hpgl_units_per_mm)), int(round(y_mm * hpgl_units_per_mm))
+
+    hpgl_lines = ['IN;', 'SP1;']
+
+    for stroke in strokes:
+        transformed = [map_point(point) for point in stroke]
+        transformed = _remove_duplicate_points(transformed)
+        if len(transformed) < 2:
+            continue
+
+        is_closed = _points_close(transformed[0], transformed[-1], tolerance=0.0)
+        if is_closed:
+            transformed = transformed[:-1]
+        if len(transformed) < 2:
+            continue
+
+        start_x, start_y = transformed[0]
+        hpgl_lines.append(f'PU{start_x},{start_y};')
+        draw_points = ','.join(f'{x},{y}' for x, y in transformed[1:])
+        if draw_points:
+            hpgl_lines.append(f'PD{draw_points};')
+        if is_closed:
+            hpgl_lines.append(f'PD{start_x},{start_y};')
+        hpgl_lines.append('PU;')
+
+    if len(hpgl_lines) <= 2:
+        return False, tr('error_no_exportable_geometry')
+
+    hpgl_lines.append('SP0;')
+    with open(output_file, 'w', encoding='ascii') as hpgl_file:
+        hpgl_file.write('\n'.join(hpgl_lines) + '\n')
+
+    return True, ''
+
+
 def _export_sketch_as_dxf(sketch: adsk.fusion.Sketch, output_file: str):
     design = _get_active_design()
     if design is None:
@@ -947,6 +997,8 @@ def _export_selected_sketch(sketch: adsk.fusion.Sketch, output_dir: str, export_
         success, error_message = _export_sketch_as_svg(sketch, output_file)
     elif export_format == 'PDF':
         success, error_message = _export_sketch_as_pdf(sketch, output_file)
+    elif export_format == 'HPGL':
+        success, error_message = _export_sketch_as_hpgl(sketch, output_file)
     else:
         success, error_message = _export_sketch_as_dxf(sketch, output_file)
 
@@ -1242,6 +1294,7 @@ def command_created(args: adsk.core.CommandCreatedEventArgs):
     format_dropdown.listItems.add('DXF', True)
     format_dropdown.listItems.add('SVG', False)
     format_dropdown.listItems.add('PDF', False)
+    format_dropdown.listItems.add('HPGL', False)
 
     output_path_input = inputs.addStringValueInput(
         OUTPUT_PATH_INPUT_ID,
@@ -1323,7 +1376,7 @@ def command_validate_input(args: adsk.core.ValidateInputsEventArgs):
 
     is_valid = has_sketch_selection or has_face_selection
     is_valid = is_valid and bool(output_path)
-    is_valid = is_valid and selected_format in ('DXF', 'SVG', 'PDF')
+    is_valid = is_valid and selected_format in ('DXF', 'SVG', 'PDF', 'HPGL')
     args.areInputsValid = is_valid
 
 

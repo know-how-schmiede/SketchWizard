@@ -1,5 +1,9 @@
 # Version History
 
+## 0.7.5 (2026-03-12)
+
+- Added `HPGL` as an additional export format.
+
 ## 0.7.4 (2026-03-12)
 
 - Updated i18n translations for `es`, `fr`, `it`, and `pl` to cover all current face/projection/deactivation dialog options and related messages.
